@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, File, UploadFile
 from app.schemas.video import VideoRequest, VideoResponse, TaskStatus
 from app.services.runway_service import RunwayService
 import logging
@@ -8,11 +8,12 @@ router = APIRouter()
 runway_service = RunwayService()
 
 @router.post("/videos", response_model=VideoResponse)
-async def create_video(request: VideoRequest):
+async def create_video(prompt_text: str, image_file: UploadFile = File(...)):
     try:
+        image_data = await image_file.read()
         result = await runway_service.create_video_from_image(
-            image_data=request.image_data,
-            prompt_text=request.prompt_text
+            image_data=image_data,
+            prompt_text=prompt_text
         )
         return VideoResponse(**result)
     except Exception as e:
