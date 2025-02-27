@@ -3,6 +3,7 @@ import logging
 from typing import Optional
 import runwayml
 from app.core.config import settings
+import mimetypes
 
 logger = logging.getLogger(__name__)
 
@@ -12,15 +13,21 @@ class RunwayService:
 
     async def create_video_from_image(
         self,
-        image_data: str,
-        prompt_text: str
+        image_data: bytes,
+        prompt_text: str,
+        content_type: str
     ) -> dict:
         try:
+            # Convert bytes to base64 with proper data URI prefix
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            data_uri = f"data:{content_type};base64,{base64_image}"
+            
             # Create image-to-video task
-            task = await self.client.imageToVideo.create(
+            # Note: Update these parameters according to Runway's actual API documentation
+            task = await self.client.image_to_video.create(
                 model='gen3a_turbo',
-                promptImage=image_data,
-                promptText=prompt_text,
+                prompt_image=data_uri,
+                prompt_text=prompt_text,
             )
             
             return {
