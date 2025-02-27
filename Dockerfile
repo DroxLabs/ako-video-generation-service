@@ -41,4 +41,5 @@ CMD ["gunicorn", \
      "--access-logfile", "-", \
      "--error-logfile", "-", \
      "--timeout", "120", \
+     "--reload", \
      "app.main:app"] 
