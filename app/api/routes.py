@@ -32,4 +32,8 @@ async def get_video_status(task_id: str):
         raise HTTPException(
             status_code=500,
             detail="Failed to get video status"
-        ) 
+        )
+
+@router.get("/health", status_code=200)
+async def health_check():
+    return {"status": "healthy"} 
