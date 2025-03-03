@@ -1,0 +1,63 @@
+name: sona CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2  # Updated to v2
+
+  deploy:
+   runs-on: ubuntu-latest
+
+   steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set environment variables
+        run: |
+          echo "SERVER_HOST=${{ secrets.EC2_SERVER_HOST }}" >> $GITHUB_ENV
+          echo "SERVER_USER=${{ secrets.EC2_SERVER_USER }}" >> $GITHUB_ENV
+          echo "BRANCH=main" >> $GITHUB_ENV
+
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: github.com
+
+      - name: Set SSH key permissions
+        run: chmod 600 ~/.ssh/id_rsa
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 60m
+          script: |
+              cd /home/ubuntu/ako-video-generation-service
+              
+              # Add GitHub to known hosts
+              ssh-keyscan github.com >> ~/.ssh/known_hosts
+              # Clean up disk space
+              docker system prune -f
+              
+              # Pull the latest code from the appropriate branch using HTTPS with PAT
+              git config --global credential.helper store
+              echo "https://${{ secrets.GH_PAT }}:@github.com" > ~/.git-credentials
+              git fetch origin
+              git reset --hard origin/${{ env.BRANCH }}
+              # Restart the Docker containers
+              docker compose down | true
+              docker compose up --build -d
