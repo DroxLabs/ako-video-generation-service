@@ -1,4 +1,4 @@
-name: sona CI/CD Pipeline
+name: ako CI/CD Pipeline
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
         run: |
           echo "SERVER_HOST=${{ secrets.EC2_SERVER_HOST }}" >> $GITHUB_ENV
           echo "SERVER_USER=${{ secrets.EC2_SERVER_USER }}" >> $GITHUB_ENV
-          echo "BRANCH=main" >> $GITHUB_ENV
+          echo "BRANCH=develop" >> $GITHUB_ENV
 
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
