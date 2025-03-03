@@ -14,8 +14,8 @@ class RunwayService:
     async def create_video_from_image(
         self,
         image_data: bytes,
-        prompt_text: str,
-        content_type: str
+        content_type: str,
+        prompt_text: str = 'generate a video',
     ) -> dict:
         try:
             # Convert bytes to base64 with proper data URI prefix
@@ -24,7 +24,7 @@ class RunwayService:
             
             # Create image-to-video task
             # Note: Update these parameters according to Runway's actual API documentation
-            task = await self.client.image_to_video.create(
+            task = self.client.image_to_video.create(
                 model='gen3a_turbo',
                 prompt_image=data_uri,
                 prompt_text=prompt_text,
@@ -40,17 +40,16 @@ class RunwayService:
 
     async def get_task_status(self, task_id: str) -> dict:
         try:
-            task = await self.client.tasks.retrieve(task_id)
-            
+            task = self.client.tasks.retrieve(task_id)
             response = {
                 "task_id": task_id,
                 "status": task.status
             }
             
             if task.status == "SUCCEEDED":
-                response["video_url"] = task.output.url
+                response["video_url"] = task.output[0]
                 
             return response
         except Exception as e:
-            logger.error(f"Error checking task status: {str(e)}")
+            logger.error(f"Error checking task status: {str(e)}, TASK: {task}")
             raise 
