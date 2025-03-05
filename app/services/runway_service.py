@@ -32,7 +32,7 @@ class RunwayService:
             # Create image-to-video task
             task = self.client.image_to_video.create(
                 model='gen3a_turbo',
-                prompt_image=image_uris if len(image_uris) > 1 else image_uris[0],
+                prompt_image=image_uris if len(image_uris) > 1 else [image_uris[0]],
                 prompt_text=prompt_text,
                 duration=duration,
             )
