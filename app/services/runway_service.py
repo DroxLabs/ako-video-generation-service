@@ -13,21 +13,26 @@ class RunwayService:
 
     async def create_video_from_image(
         self,
-        image_data: bytes,
-        content_type: str,
+        image_data_list: bytes,
+        content_types: str,
         prompt_text: str = 'generate a video',
         duration: int = 5
     ) -> dict:
         try:
-            # Convert bytes to base64 with proper data URI prefix
-            base64_image = base64.b64encode(image_data).decode('utf-8')
-            data_uri = f"data:{content_type};base64,{base64_image}"
+            if len(image_data_list) == 0 or len(image_data_list) > 2:
+                raise ValueError("You must provide one or two images.")
+            
+            # Convert images to base64 data URIs
+            image_uris = [
+                {"uri": f"data:{content_types[i]};base64,{base64.b64encode(image_data_list[i]).decode('utf-8')}",
+                 "position": "first" if i == 0 else "last"}
+                for i in range(len(image_data_list))
+            ]
             
             # Create image-to-video task
-            # Note: Update these parameters according to Runway's actual API documentation
             task = self.client.image_to_video.create(
                 model='gen3a_turbo',
-                prompt_image=data_uri,
+                prompt_image=image_uris if len(image_uris) > 1 else image_uris[0],
                 prompt_text=prompt_text,
                 duration=duration,
             )
