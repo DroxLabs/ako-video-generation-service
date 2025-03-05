@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, File, UploadFile
+from fastapi import APIRouter, HTTPException, File, UploadFile, Form
 from app.schemas.video import VideoRequest, VideoResponse, TaskStatus
 from app.services.runway_service import RunwayService
 import logging
