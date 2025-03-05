@@ -16,6 +16,7 @@ class RunwayService:
         image_data: bytes,
         content_type: str,
         prompt_text: str = 'generate a video',
+        duration: int = 5
     ) -> dict:
         try:
             # Convert bytes to base64 with proper data URI prefix
@@ -28,6 +29,7 @@ class RunwayService:
                 model='gen3a_turbo',
                 prompt_image=data_uri,
                 prompt_text=prompt_text,
+                duration=duration,
             )
             
             return {

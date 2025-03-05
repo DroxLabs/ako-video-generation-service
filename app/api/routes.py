@@ -14,7 +14,8 @@ async def create_video(prompt_text: str, image_file: UploadFile = File(...)):
         result = await runway_service.create_video_from_image(
             image_data=image_data,
             prompt_text=prompt_text,
-            content_type=image_file.content_type
+            content_type=image_file.content_type,
+            duration=5
         )
         return VideoResponse(**result)
     except Exception as e:
