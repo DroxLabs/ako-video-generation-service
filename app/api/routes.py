@@ -8,16 +8,36 @@ router = APIRouter()
 runway_service = RunwayService()
 
 @router.post("/videos", response_model=VideoResponse)
-async def create_video(prompt_text: str, image_file: UploadFile = File(...)):
+async def create_video(
+    first_frame: UploadFile = File(..., description="First frame image"),
+    last_frame: UploadFile = File(None, description="Last frame image"),
+    prompt_text: str = Form("generate a video"),
+    duration: int = Form(5)
+):
     try:
-        image_data = await image_file.read()
+        image_data_list = []
+        content_types = []
+        
+        if first_frame:
+            image_data_list.append(await first_frame.read())
+            content_types.append(first_frame.content_type)
+
+        if last_frame:
+            image_data_list.append(await last_frame.read())
+            content_types.append(last_frame.content_type)
+        
+        if not image_data_list:
+            raise HTTPException(status_code=400, detail="At least one image must be provided.")
+        
         result = await runway_service.create_video_from_image(
-            image_data=image_data,
+            image_data_list=image_data_list,
+            content_types=content_types,
             prompt_text=prompt_text,
-            content_type=image_file.content_type,
-            duration=5
+            duration=duration
         )
+        
         return VideoResponse(**result)
+    
     except Exception as e:
         logger.error(f"Error in create_video: {str(e)}")
         raise HTTPException(
